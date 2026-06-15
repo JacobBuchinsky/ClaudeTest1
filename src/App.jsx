@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
-import { armAudio, playCrunch } from './crunch'
+import { armAudio, playCrunch, playScreech } from './crunch'
 
 const STORAGE_KEY = 'claudetest1.todos'
 
@@ -20,6 +20,7 @@ export default function App() {
   const [text, setText] = useState('')
   const [filter, setFilter] = useState('all') // all | active | done
   const [flying, setFlying] = useState([]) // entries mid delete-animation
+  const [scare, setScare] = useState(false) // jumpscare overlay visible
 
   // Persist to the browser whenever the list changes.
   useEffect(() => {
@@ -66,6 +67,10 @@ export default function App() {
   }
 
   function clearDone() {
+    armAudio() // unlock audio within this click gesture
+    setScare(true)
+    playScreech()
+    setTimeout(() => setScare(false), 1200)
     setTodos((prev) => prev.filter((t) => !t.done))
   }
 
@@ -143,7 +148,117 @@ export default function App() {
           />
         ))}
       </div>
+
+      {scare && <JumpScare />}
     </main>
+  )
+}
+
+// Full-screen FNAF-style jumpscare: an original creepy animatronic face
+// (drawn in SVG, no third-party assets) that slams in shaking and flickering.
+function JumpScare() {
+  const mouthL = 52
+  const mouthR = 148
+  const count = 7
+  const w = (mouthR - mouthL) / count
+  const topTeeth = Array.from(
+    { length: count },
+    (_, i) =>
+      `${mouthL + i * w},116 ${mouthL + (i + 1) * w},116 ${mouthL + (i + 0.5) * w},148`,
+  )
+  const botTeeth = Array.from(
+    { length: count },
+    (_, i) =>
+      `${mouthL + i * w},172 ${mouthL + (i + 1) * w},172 ${mouthL + (i + 0.5) * w},140`,
+  )
+
+  return (
+    <div className="jumpscare" role="alert" aria-label="Jumpscare!">
+      <div className="jumpscare-shake">
+        <svg
+          className="jumpscare-face"
+          viewBox="0 0 200 200"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <filter id="js-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3.5" result="b" />
+              <feMerge>
+                <feMergeNode in="b" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
+          {/* ears */}
+          <circle cx="42" cy="28" r="24" fill="#16181b" />
+          <circle cx="158" cy="28" r="24" fill="#16181b" />
+          <circle cx="42" cy="28" r="12" fill="#0a0b0c" />
+          <circle cx="158" cy="28" r="12" fill="#0a0b0c" />
+
+          {/* head */}
+          <ellipse
+            cx="100"
+            cy="102"
+            rx="80"
+            ry="90"
+            fill="#1d1f22"
+            stroke="#000"
+            strokeWidth="3"
+          />
+
+          {/* eye sockets + glowing pupils */}
+          <ellipse cx="68" cy="80" rx="24" ry="19" fill="#000" />
+          <ellipse cx="132" cy="80" rx="24" ry="19" fill="#000" />
+          <circle cx="68" cy="80" r="8" fill="#ff2222" filter="url(#js-glow)" />
+          <circle cx="132" cy="80" r="8" fill="#ff2222" filter="url(#js-glow)" />
+          <circle cx="68" cy="80" r="3.2" fill="#fff" />
+          <circle cx="132" cy="80" r="3.2" fill="#fff" />
+
+          {/* nose */}
+          <polygon points="92,100 108,100 100,112" fill="#0a0b0c" />
+
+          {/* mouth cavity */}
+          <rect x="50" y="116" width="100" height="58" rx="6" fill="#040404" />
+
+          {/* teeth */}
+          {topTeeth.map((pts, i) => (
+            <polygon
+              key={`t${i}`}
+              points={pts}
+              fill="#e9e7d6"
+              stroke="#8f8c79"
+              strokeWidth="0.6"
+            />
+          ))}
+          {botTeeth.map((pts, i) => (
+            <polygon
+              key={`b${i}`}
+              points={pts}
+              fill="#e9e7d6"
+              stroke="#8f8c79"
+              strokeWidth="0.6"
+            />
+          ))}
+
+          {/* rust / blood streaks under the eyes */}
+          <path
+            d="M66 92 Q63 120 67 150"
+            stroke="#5a1010"
+            strokeWidth="2.5"
+            fill="none"
+            opacity="0.75"
+          />
+          <path
+            d="M134 92 Q137 122 133 152"
+            stroke="#5a1010"
+            strokeWidth="2.5"
+            fill="none"
+            opacity="0.75"
+          />
+        </svg>
+      </div>
+    </div>
   )
 }
 

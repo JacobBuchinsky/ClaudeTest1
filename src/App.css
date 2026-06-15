@@ -213,10 +213,87 @@ button:hover {
   }
 }
 
-/* Respect users who prefer less motion: JS already skips the ricochet for
-   them; here we also suppress the particle spray. */
+/* ---- jumpscare ---- */
+
+.jumpscare {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Subtle brightness flicker — intentionally NOT a black/white strobe. */
+  animation: js-flicker 0.1s steps(2, end) infinite;
+}
+
+.jumpscare-shake {
+  animation: js-shake 0.05s steps(1, end) infinite;
+}
+
+.jumpscare-face {
+  width: min(92vw, 92vh);
+  height: min(92vw, 92vh);
+  transform-origin: center;
+  animation: js-zoom 0.45s ease-out forwards;
+  filter: drop-shadow(0 0 24px rgba(255, 0, 0, 0.45));
+}
+
+@keyframes js-zoom {
+  0% {
+    transform: scale(0.35);
+  }
+  70% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes js-shake {
+  0% {
+    transform: translate(-7px, 5px) rotate(-1.2deg);
+  }
+  25% {
+    transform: translate(8px, -6px) rotate(1.6deg);
+  }
+  50% {
+    transform: translate(-6px, 7px) rotate(-1.6deg);
+  }
+  75% {
+    transform: translate(7px, -5px) rotate(1.1deg);
+  }
+  100% {
+    transform: translate(-8px, 6px) rotate(-1deg);
+  }
+}
+
+@keyframes js-flicker {
+  0% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(0.8);
+  }
+  100% {
+    filter: brightness(1.1);
+  }
+}
+
+/* Respect users who prefer less motion: skip particle spray, and tone the
+   jumpscare down to a still face (no shake, no flicker strobe). */
 @media (prefers-reduced-motion: reduce) {
   .particle {
     display: none;
+  }
+  .jumpscare {
+    animation: none;
+  }
+  .jumpscare-shake {
+    animation: none;
+  }
+  .jumpscare-face {
+    animation: js-zoom 0.3s ease-out forwards;
   }
 }

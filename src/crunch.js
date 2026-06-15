@@ -88,3 +88,70 @@ export function playCrunch() {
   osc.start(now)
   osc.stop(now + 0.4)
 }
+
+// A horrifying robotic screech for the jumpscare: a dissonant cluster of
+// detuned descending sawtooths + harsh noise, hard-distorted and tremolo'd.
+export function playScreech() {
+  const ac = getCtx()
+  const now = ac.currentTime
+  const dur = 1.2
+
+  const master = ac.createGain()
+  master.gain.value = 1.0 // full scale — this is meant to hurt
+  master.connect(ac.destination)
+
+  const shaper = ac.createWaveShaper()
+  shaper.curve = distortionCurve(220)
+  shaper.oversample = '4x'
+  shaper.connect(master)
+
+  // Fast amplitude wobble => robotic "scream" texture.
+  const tremolo = ac.createGain()
+  tremolo.gain.value = 0.6
+  tremolo.connect(shaper)
+  const lfo = ac.createOscillator()
+  lfo.type = 'square'
+  lfo.frequency.value = 30
+  const lfoGain = ac.createGain()
+  lfoGain.gain.value = 0.4
+  lfo.connect(lfoGain)
+  lfoGain.connect(tremolo.gain)
+
+  // Envelope: instant attack, hold, quick release.
+  const env = ac.createGain()
+  env.gain.setValueAtTime(0.0001, now)
+  env.gain.exponentialRampToValueAtTime(1.0, now + 0.015)
+  env.gain.setValueAtTime(1.0, now + dur - 0.18)
+  env.gain.exponentialRampToValueAtTime(0.001, now + dur)
+  env.connect(tremolo)
+
+  // Dissonant detuned sawtooth cluster, wailing downward.
+  const freqs = [110, 117, 220, 233, 330, 467]
+  const oscs = freqs.map((f) => {
+    const o = ac.createOscillator()
+    o.type = 'sawtooth'
+    o.frequency.setValueAtTime(f * 2.2, now)
+    o.frequency.exponentialRampToValueAtTime(f, now + dur)
+    o.connect(env)
+    return o
+  })
+
+  // Harsh white-noise layer on top.
+  const len = Math.floor(ac.sampleRate * dur)
+  const buf = ac.createBuffer(1, len, ac.sampleRate)
+  const d = buf.getChannelData(0)
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1
+  const noise = ac.createBufferSource()
+  noise.buffer = buf
+  const noiseGain = ac.createGain()
+  noiseGain.gain.value = 0.45
+  noise.connect(noiseGain)
+  noiseGain.connect(env)
+
+  lfo.start(now)
+  noise.start(now)
+  oscs.forEach((o) => o.start(now))
+  lfo.stop(now + dur)
+  noise.stop(now + dur)
+  oscs.forEach((o) => o.stop(now + dur))
+}
