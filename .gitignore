@@ -1,3 +1,9 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
 # OS / editor cruft
 Thumbs.db
 .DS_Store
@@ -5,3 +11,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.iml
+
+# Logs
+npm-debug.log*

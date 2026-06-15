@@ -1,0 +1,146 @@
+.app {
+  width: 100%;
+  max-width: 480px;
+  padding: 2rem 1.25rem 3rem;
+}
+
+h1 {
+  margin: 0 0 1.25rem;
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+}
+
+.add {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.add input {
+  flex: 1;
+  padding: 0.6rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background: #1b1b1b;
+  color: inherit;
+}
+
+.add input:focus {
+  outline: 2px solid #4f8cff;
+  border-color: transparent;
+}
+
+button {
+  cursor: pointer;
+  border: 1px solid #333;
+  background: #1b1b1b;
+  color: inherit;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+button:hover {
+  background: #262626;
+}
+
+.add button {
+  background: #4f8cff;
+  border-color: #4f8cff;
+  color: #fff;
+  font-weight: 600;
+}
+
+.add button:hover {
+  background: #3d78e8;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.75rem;
+  background: #1b1b1b;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+}
+
+.item label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+.item input[type='checkbox'] {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: #4f8cff;
+}
+
+.item.done span {
+  text-decoration: line-through;
+  color: #777;
+}
+
+.remove {
+  border: none;
+  background: transparent;
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 0 0.3rem;
+  color: #888;
+}
+
+.remove:hover {
+  background: transparent;
+  color: #ff6b6b;
+}
+
+.empty {
+  text-align: center;
+  color: #666;
+  padding: 1.5rem 0;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.filters {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.filters button {
+  padding: 0.3rem 0.55rem;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+}
+
+.filters button.active {
+  border-color: #4f8cff;
+  color: #fff;
+}
+
+.clear {
+  padding: 0.3rem 0.55rem;
+  font-size: 0.8rem;
+}
