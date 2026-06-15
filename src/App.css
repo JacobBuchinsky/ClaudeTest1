@@ -156,14 +156,11 @@ button:hover {
   z-index: 50;
 }
 
+/* Position + rotation are driven frame-by-frame from JS (physics ricochet),
+   so there's no CSS keyframe for the flight itself. */
 .flyer {
   position: fixed;
-}
-
-/* The bounce-and-spin trip across the screen. `forwards` keeps the flyer
-   parked at its landing spot so the explosion happens there. */
-.flyer.fly {
-  animation: bounce-spin 1.3s cubic-bezier(0.45, 0, 0.55, 1) forwards;
+  will-change: transform;
 }
 
 .flyer-chip {
@@ -180,30 +177,6 @@ button:hover {
 /* On impact: hide the chip and let the particles take over. */
 .flyer.boom .flyer-chip {
   animation: chip-pop 0.25s ease-out forwards;
-}
-
-@keyframes bounce-spin {
-  0% {
-    transform: translate(0, 0) rotate(0deg) scale(1);
-  }
-  15% {
-    transform: translate(9vw, -130px) rotate(200deg) scale(1.1);
-  }
-  30% {
-    transform: translate(20vw, 0) rotate(380deg) scale(1);
-  }
-  45% {
-    transform: translate(31vw, -95px) rotate(560deg) scale(1.1);
-  }
-  60% {
-    transform: translate(42vw, 0) rotate(740deg) scale(1);
-  }
-  78% {
-    transform: translate(53vw, -55px) rotate(920deg) scale(1.1);
-  }
-  100% {
-    transform: translate(62vw, 0) rotate(1080deg) scale(1);
-  }
 }
 
 @keyframes chip-pop {
@@ -240,11 +213,9 @@ button:hover {
   }
 }
 
-/* Respect users who prefer less motion: skip the joyride, just fade. */
+/* Respect users who prefer less motion: JS already skips the ricochet for
+   them; here we also suppress the particle spray. */
 @media (prefers-reduced-motion: reduce) {
-  .flyer.fly {
-    animation: chip-pop 0.3s ease-out forwards;
-  }
   .particle {
     display: none;
   }

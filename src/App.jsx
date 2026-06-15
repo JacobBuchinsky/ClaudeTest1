@@ -1,6 +1,7 @@
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
+import { armAudio, playCrunch } from './crunch'
 
 const STORAGE_KEY = 'claudetest1.todos'
 
@@ -43,8 +44,9 @@ export default function App() {
   }
 
   function remove(id, e) {
+    armAudio() // unlock audio within this click gesture
     // Snapshot where the row currently sits on screen, then launch a
-    // detached "flyer" that bounces+spins across the viewport and explodes.
+    // detached "flyer" that ricochets+spins around the viewport and explodes.
     const row = e.currentTarget.closest('.item')
     const item = todos.find((t) => t.id === id)
     if (row && item) {
@@ -145,16 +147,94 @@ export default function App() {
   )
 }
 
-// A single deleted entry's send-off: it bounces and spins across the screen,
-// then bursts into a shower of particles before vanishing.
+// A single deleted entry's send-off: it ricochets off the page edges while
+// spinning, then bursts into a shower of particles before vanishing.
+const FLY_MS = 1800 // how long it bounces before exploding
+const BOOM_MS = 650 // particle lifetime after impact
+
 function FlyingItem({ anim, onDone }) {
+  const ref = useRef(null)
   const [phase, setPhase] = useState('fly') // fly -> boom
 
   useEffect(() => {
-    const toBoom = setTimeout(() => setPhase('boom'), 1300)
-    const cleanup = setTimeout(onDone, 1300 + 650)
+    const el = ref.current
+
+    // Respect reduced-motion: skip the joyride, just pop in place.
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduce) {
+      setPhase('boom')
+      playCrunch()
+      const t = setTimeout(onDone, BOOM_MS)
+      return () => clearTimeout(t)
+    }
+
+    const w = anim.width
+    const h = el ? el.offsetHeight : 44
+    const W = window.innerWidth
+    const H = window.innerHeight
+
+    // Position (top-left, in viewport px) and velocity (px/sec).
+    let x = anim.x
+    let y = anim.y
+    const dir = Math.random() < 0.5 ? -1 : 1
+    let vx = dir * (560 + Math.random() * 320)
+    let vy = -(640 + Math.random() * 240)
+    let rot = 0
+    const spin = dir * (640 + Math.random() * 520) // deg/sec
+
+    const GRAVITY = 1600 // px/sec^2
+    const BOUNCE = 0.86 // energy kept per wall hit
+
+    let raf
+    let last
+    let start
+
+    const step = (t) => {
+      if (start === undefined) {
+        start = t
+        last = t
+      }
+      const dt = Math.min((t - last) / 1000, 0.05) // clamp to survive tab stalls
+      last = t
+
+      vy += GRAVITY * dt
+      x += vx * dt
+      y += vy * dt
+
+      // Ricochet off the four edges.
+      if (x < 0) {
+        x = 0
+        vx = -vx * BOUNCE
+      } else if (x + w > W) {
+        x = W - w
+        vx = -vx * BOUNCE
+      }
+      if (y < 0) {
+        y = 0
+        vy = -vy * BOUNCE
+      } else if (y + h > H) {
+        y = H - h
+        vy = -vy * BOUNCE
+        vx *= 0.96 // floor friction
+      }
+      rot += spin * dt
+
+      if (el) {
+        el.style.transform = `translate(${x - anim.x}px, ${y - anim.y}px) rotate(${rot}deg)`
+      }
+
+      if (t - start < FLY_MS) {
+        raf = requestAnimationFrame(step)
+      } else {
+        setPhase('boom')
+        playCrunch()
+      }
+    }
+
+    raf = requestAnimationFrame(step)
+    const cleanup = setTimeout(onDone, FLY_MS + BOOM_MS)
     return () => {
-      clearTimeout(toBoom)
+      cancelAnimationFrame(raf)
       clearTimeout(cleanup)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -175,7 +255,8 @@ function FlyingItem({ anim, onDone }) {
 
   return (
     <div
-      className={phase === 'boom' ? 'flyer fly boom' : 'flyer fly'}
+      ref={ref}
+      className={phase === 'boom' ? 'flyer boom' : 'flyer'}
       style={{ left: anim.x, top: anim.y, width: anim.width }}
     >
       <div className="flyer-chip">{anim.text}</div>
