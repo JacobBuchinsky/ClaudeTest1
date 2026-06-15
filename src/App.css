@@ -144,3 +144,108 @@ button:hover {
   padding: 0.3rem 0.55rem;
   font-size: 0.8rem;
 }
+
+/* ---- delete animation ---- */
+
+/* Full-screen, click-through layer the flyers live in. */
+.fly-layer {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.flyer {
+  position: fixed;
+}
+
+/* The bounce-and-spin trip across the screen. `forwards` keeps the flyer
+   parked at its landing spot so the explosion happens there. */
+.flyer.fly {
+  animation: bounce-spin 1.3s cubic-bezier(0.45, 0, 0.55, 1) forwards;
+}
+
+.flyer-chip {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 0.65rem 0.75rem;
+  background: #4f8cff;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* On impact: hide the chip and let the particles take over. */
+.flyer.boom .flyer-chip {
+  animation: chip-pop 0.25s ease-out forwards;
+}
+
+@keyframes bounce-spin {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  15% {
+    transform: translate(9vw, -130px) rotate(200deg) scale(1.1);
+  }
+  30% {
+    transform: translate(20vw, 0) rotate(380deg) scale(1);
+  }
+  45% {
+    transform: translate(31vw, -95px) rotate(560deg) scale(1.1);
+  }
+  60% {
+    transform: translate(42vw, 0) rotate(740deg) scale(1);
+  }
+  78% {
+    transform: translate(53vw, -55px) rotate(920deg) scale(1.1);
+  }
+  100% {
+    transform: translate(62vw, 0) rotate(1080deg) scale(1);
+  }
+}
+
+@keyframes chip-pop {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* Particles burst from the chip's center. */
+.particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: 50%;
+  animation: particle-burst 0.6s ease-out forwards;
+}
+
+@keyframes particle-burst {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* Respect users who prefer less motion: skip the joyride, just fade. */
+@media (prefers-reduced-motion: reduce) {
+  .flyer.fly {
+    animation: chip-pop 0.3s ease-out forwards;
+  }
+  .particle {
+    display: none;
+  }
+}
